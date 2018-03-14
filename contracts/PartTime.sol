@@ -23,9 +23,10 @@ contract PartTime {
 
     // Assign jobId
     jobId = totalJob;
-
+    
+    newJob.id = jobId;
     newJob.title = title;
-    newJob.description = description;
+    newJob.description = description; 
     newJob.salary = salary;
     newJob.creator = msg.sender;
 
