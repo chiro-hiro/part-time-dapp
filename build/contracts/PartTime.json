@@ -1,0 +1,104 @@
+{
+  "contractName": "PartTime",
+  "abi": [],
+  "bytecode": "0x60606040523415600e57600080fd5b603580601b6000396000f3006060604052600080fd00a165627a7a72305820876139772849c7ce529d04bbe6d10f90622101b65d5f1c0b1cb498eb041c6d5a0029",
+  "deployedBytecode": "0x6060604052600080fd00a165627a7a72305820876139772849c7ce529d04bbe6d10f90622101b65d5f1c0b1cb498eb041c6d5a0029",
+  "sourceMap": "28:26:1:-;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "28:26:1:-;;;;;",
+  "source": "pragma solidity ^0.4.17;\r\n\r\ncontract PartTime {\r\n  \r\n}\r\n",
+  "sourcePath": "C:\\Users\\tad88\\My Projects\\part-time-dapp\\contracts\\PartTime.sol",
+  "ast": {
+    "absolutePath": "/C/Users/tad88/My Projects/part-time-dapp/contracts/PartTime.sol",
+    "exportedSymbols": {
+      "PartTime": [
+        59
+      ]
+    },
+    "id": 60,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 58,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".17"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:1"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 59,
+        "linearizedBaseContracts": [
+          59
+        ],
+        "name": "PartTime",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 60,
+        "src": "28:26:1"
+      }
+    ],
+    "src": "0:56:1"
+  },
+  "legacyAST": {
+    "absolutePath": "/C/Users/tad88/My Projects/part-time-dapp/contracts/PartTime.sol",
+    "exportedSymbols": {
+      "PartTime": [
+        59
+      ]
+    },
+    "id": 60,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 58,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".17"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:1"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 59,
+        "linearizedBaseContracts": [
+          59
+        ],
+        "name": "PartTime",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 60,
+        "src": "28:26:1"
+      }
+    ],
+    "src": "0:56:1"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.19+commit.c4cbbb05.Emscripten.clang"
+  },
+  "networks": {
+    "1521013644427": {
+      "events": {},
+      "links": {},
+      "address": "0x50be2210b8c9b32723ce0410af4ca587083f8d0e",
+      "transactionHash": "0xbb6698431e5cf7003e1df8a89e80eef21cc7c080f8f39c4dadd327cade02d36b"
+    }
+  },
+  "schemaVersion": "2.0.0",
+  "updatedAt": "2018-03-14T07:53:04.364Z"
+}
