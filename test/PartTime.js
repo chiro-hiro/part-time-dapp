@@ -23,7 +23,7 @@ contract('Partime', function (accounts) {
     it('should able to add new job', function () {
         return Partime.deployed().then(function (instance) {
             return instance.createJob(((new Date()).getTime() / 1000 + 432000),
-                "This is tittle",
+                "This is title",
                 "This is description",
                 createTx(accounts[0], instance.address, web3.toWei('1', 'ether')));
         }).then(function (totalJob) {
