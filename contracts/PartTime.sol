@@ -13,6 +13,7 @@ contract PartTime {
         uint256 timeOut;
         bytes title;
         bytes description;
+        address labor;
     }
 
     //New job append
@@ -29,6 +30,9 @@ contract PartTime {
     //Cancel created job
     event CancelCreatedJob(uint256 indexed id,
     address creator);
+
+    //Job done event
+    event Done(uint256 jobId, address indexed labor);
 
     //Minium accept salary
     uint256 constant public MINIUM_SALARY = 0.1 ether;
@@ -131,6 +135,7 @@ contract PartTime {
 
         //Change working state
         jobData[jobId].start = block.timestamp;
+        jobData[jobId].labor = msg.sender;
     }
 
     //View job data
