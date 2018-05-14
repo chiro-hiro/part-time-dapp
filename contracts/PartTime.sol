@@ -22,9 +22,13 @@ contract PartTime {
     uint256 timeOut);
 
     //An woker start working
-    event TakeJob(
+    event TakeAJob(
     uint256 indexed id,
     address indexed labor);
+    
+    //Cancel created job
+    event CancelCreatedJob(uint256 indexed id,
+    address creator);
 
     //Minium accept salary
     uint256 constant public MINIUM_SALARY = 0.1 ether;
@@ -59,6 +63,12 @@ contract PartTime {
         _;
     }
 
+    //Only job creator is accepted
+    modifier onlyCreator(uint256 jobId) {
+        require(jobData[jobId].creator == msg.sender);
+        _;
+    }
+
     //Check is it a taked job
     modifier onlyValidJob(uint256 jobId) {
         require(jobData[jobId].end == 0);
@@ -78,19 +88,37 @@ contract PartTime {
         jobId = totalJob;
         
         newJob.id = jobId;
-        newJob.id = timeOut;
+        newJob.timeOut = timeOut;
         newJob.title = title;
         newJob.description = description; 
         newJob.salary = msg.value;
         newJob.creator = msg.sender;
 
         //Trigger event
-        NewJob(jobId, msg.sender, msg.value, timeOut);
+        emit NewJob(jobId, msg.sender, msg.value, timeOut);
 
         // Append newJob to jobData
         jobData[totalJob++] = newJob;
 
         return jobId;
+    }
+
+    //Creator able to cancel his own jobs
+    function
+    cancelJob(uint256 jobId)
+    public onlyCreator(jobId) onlyValidJob(jobId) onlyValidId(jobId) returns(bool)
+    {
+        //Job will become invalid due to end isn't equal to 0
+        jobData[jobId].end = block.timestamp;
+
+        emit CancelCreatedJob(jobId, msg.sender);
+
+        //Smart contract have to return mortgage
+        if (!address(this).send(jobData[jobId].salary)) {
+            revert();
+        }
+
+        return true;
     }
 
     //Take job
@@ -99,13 +127,13 @@ contract PartTime {
     public onlyValidMortgage(jobId) onlyValidId(jobId) onlyValidJob(jobId)
     {
         //Trigger event to log labor
-        TakeJob(jobId, msg.sender);
+        emit TakeAJob(jobId, msg.sender);
 
         //Change working state
         jobData[jobId].start = block.timestamp;
     }
 
-    //Veiw job data
+    //View job data
     function
     viewJob(uint256 jobId)
     public onlyValidId(jobId) constant returns (
