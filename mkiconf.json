@@ -1,0 +1,7 @@
+[{
+    "solv": "^0.4.23",
+    "path": "./build/contracts",
+    "entry": "PartTime.json",
+    "contract": "PartTimeInterface",
+    "output": "./contracts/interfaces/PartTimeInterface.sol"
+}]
