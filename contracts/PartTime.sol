@@ -14,6 +14,7 @@ contract PartTime {
         bytes title;
         bytes description;
         address labor;
+        bool done;
     }
 
     //We don't let any trapped in this contract
@@ -35,6 +36,9 @@ contract PartTime {
 
     //Job done event
     event Done(uint256 jobId, address indexed labor);
+
+    //Job failed event
+    event Failed(uint256 jobId, address indexed labor);
 
     //Paid
     event Paid(address indexed creator, address indexed labor, uint256 value);
@@ -68,7 +72,7 @@ contract PartTime {
 
     //Mortgage should be greater than 1/10
     modifier onlyValidMortgage(uint256 jobId) {
-        require(msg.value > jobData[jobId].salary/10);
+        require(msg.value >= jobData[jobId].salary/10);
         _;
     }
 
@@ -91,8 +95,13 @@ contract PartTime {
         _;
     }
 
+    modifier onlyNotDone(uint256 jobId){
+        require(jobData[jobId].done == false);
+        _;
+    }
+
     //Append new job to mapping
-    function create (uint256 timeOut, bytes title, bytes description)
+    function create(uint256 timeOut, bytes title, bytes description)
     public onlyHaveFund onlyValidTimeOut(timeOut) payable returns(uint256 jobId)
     {
         // Saving a little gas by create a temporary object
@@ -109,8 +118,8 @@ contract PartTime {
         newJob.creator = msg.sender;
 
         // Append newJob to jobData
-        jobData[totalJob++] = newJob;
-
+        jobData[totalJob] = newJob;
+        totalJob++;
         //Trigger event
         emit NewJob(jobId, msg.sender, msg.value, timeOut);
 
@@ -121,7 +130,7 @@ contract PartTime {
     function cancel(uint256 jobId)
     public onlyCreator(jobId) onlyAvailableJob(jobId) onlyValidId(jobId) returns(bool)
     {
-        //Job will become invalid due to end isn't equal to 0
+        //Job will become unavailable due to end isn't equal to 0
         jobData[jobId].end = block.timestamp;
 
         //Smart contract have to return mortgage
@@ -136,35 +145,58 @@ contract PartTime {
     function take(uint256 jobId)
     public payable onlyValidMortgage(jobId) onlyValidId(jobId) onlyAvailableJob(jobId) returns(bool)
     {
-        //Trigger event to log labor
-        emit TakeAJob(jobId, msg.sender);
 
         //Change working state
         jobData[jobId].start = block.timestamp;
         jobData[jobId].labor = msg.sender;
+        
+        //Trigger event to log labor
+        emit TakeAJob(jobId, msg.sender);
 
         return true;
     }
 
     //Labor had finished their job
-    function finish(uint256 jobId)
+    function finished(uint256 jobId)
     public onlyValidId(jobId) onlyLabor(jobId) returns(bool) {
+        jobData[jobId].end = block.timestamp;
         emit Done(jobId, msg.sender);
+        return true;
+    }
+
+    //Labor had failed their job
+    function failed(uint256 jobId)
+    public onlyValidId(jobId) onlyLabor(jobId) returns(bool) {
+        //Reset job
+        Job memory mJob = jobData[jobId];
+        uint256 value = (mJob.salary/10)/2;
+        mJob.start = 0;
+        mJob.labor = 0;
+        //Update data set
+        jobData[jobId] = mJob;
+        //Labor lost 1/2 their mortgage
+        msg.sender.transfer(value);
+        //Creator receive 1/2 labor's mortgage
+        mJob.creator.transfer(value);
+        emit Failed(jobId, msg.sender);
         return true;
     }
 
     //Creator pay money
     function pay(uint256 jobId)
-    public onlyValidId(jobId) onlyCreator(jobId) returns(bool) {
+    public onlyValidId(jobId) onlyCreator(jobId) onlyNotDone(jobId) returns(bool) {
         uint256 value;
         
         //Fund = salary + mortgage
         value = jobData[jobId].salary;
         value = value + (value/10);
 
+        //Mark job ask done
+        jobData[jobId].done = true;
+
         //Transfer fund and mortgage to labor
         jobData[jobId].labor.transfer(value);
-
+        
         emit Paid(jobData[jobId].creator, jobData[jobId].labor, value);
 
         return true;
