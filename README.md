@@ -15,5 +15,11 @@ npm i -g -p windows-build-tools
 
 Install development packages:
 ```
-npm i -g ganache-cli truffle
+npm i -g ganache-cli truffle mkinterface
+```
+
+## Build interface
+At the root folder of project:
+```
+truffle compile && mkinterface
 ```
