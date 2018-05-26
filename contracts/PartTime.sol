@@ -16,6 +16,14 @@ contract PartTime {
         address labor;
     }
 
+    //We don't let any trapped in this contract
+    function () public payable {
+        revert();
+    }
+
+    //Empty constructor
+    constructor () public {}
+
     //New job append
     event NewJob(uint256 indexed id, address creator, uint256 salary, uint256 timeOut);
 
