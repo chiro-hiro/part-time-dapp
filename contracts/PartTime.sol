@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 
 contract PartTime {
@@ -17,22 +17,19 @@ contract PartTime {
     }
 
     //New job append
-    event NewJob(uint256 indexed id,
-    address creator,
-    uint256 salary,
-    uint256 timeOut);
+    event NewJob(uint256 indexed id, address creator, uint256 salary, uint256 timeOut);
 
     //An woker start working
-    event TakeAJob(
-    uint256 indexed id,
-    address indexed labor);
+    event TakeAJob( uint256 indexed id, address indexed labor);
     
     //Cancel created job
-    event CancelCreatedJob(uint256 indexed id,
-    address creator);
+    event CancelCreatedJob(uint256 indexed id, address creator);
 
     //Job done event
     event Done(uint256 jobId, address indexed labor);
+
+    //Paid
+    event Paid(address indexed creator, address indexed labor, uint256 value);
 
     //Minium accept salary
     uint256 constant public MINIUM_SALARY = 0.1 ether;
@@ -73,16 +70,21 @@ contract PartTime {
         _;
     }
 
+    //Only job labor is accepted
+    modifier onlyLabor(uint256 jobId) {
+        require(jobData[jobId].labor == msg.sender);
+        _;
+    }
+
     //Check is it a taked job
-    modifier onlyValidJob(uint256 jobId) {
+    modifier onlyAvailableJob(uint256 jobId) {
         require(jobData[jobId].end == 0);
         require(jobData[jobId].start == 0);
         _;
     }
 
     //Append new job to mapping
-    function
-    createJob (uint256 timeOut, bytes title, bytes description)
+    function create (uint256 timeOut, bytes title, bytes description)
     public onlyHaveFund onlyValidTimeOut(timeOut) payable returns(uint256 jobId)
     {
         // Saving a little gas by create a temporary object
@@ -98,37 +100,33 @@ contract PartTime {
         newJob.salary = msg.value;
         newJob.creator = msg.sender;
 
-        //Trigger event
-        emit NewJob(jobId, msg.sender, msg.value, timeOut);
-
         // Append newJob to jobData
         jobData[totalJob++] = newJob;
+
+        //Trigger event
+        emit NewJob(jobId, msg.sender, msg.value, timeOut);
 
         return jobId;
     }
 
     //Creator able to cancel his own jobs
-    function
-    cancelJob(uint256 jobId)
-    public onlyCreator(jobId) onlyValidJob(jobId) onlyValidId(jobId) returns(bool)
+    function cancel(uint256 jobId)
+    public onlyCreator(jobId) onlyAvailableJob(jobId) onlyValidId(jobId) returns(bool)
     {
         //Job will become invalid due to end isn't equal to 0
         jobData[jobId].end = block.timestamp;
 
-        emit CancelCreatedJob(jobId, msg.sender);
-
         //Smart contract have to return mortgage
-        if (!address(this).send(jobData[jobId].salary)) {
-            revert();
-        }
+        jobData[jobId].creator.transfer(jobData[jobId].salary);
+
+        emit CancelCreatedJob(jobId, msg.sender);
 
         return true;
     }
 
     //Take job
-    function
-    takeJob (uint256 jobId)
-    public onlyValidMortgage(jobId) onlyValidId(jobId) onlyValidJob(jobId)
+    function take(uint256 jobId)
+    public payable onlyValidMortgage(jobId) onlyValidId(jobId) onlyAvailableJob(jobId) returns(bool)
     {
         //Trigger event to log labor
         emit TakeAJob(jobId, msg.sender);
@@ -136,30 +134,32 @@ contract PartTime {
         //Change working state
         jobData[jobId].start = block.timestamp;
         jobData[jobId].labor = msg.sender;
+
+        return true;
     }
 
-    //View job data
-    function
-    viewJob(uint256 jobId)
-    public onlyValidId(jobId) constant returns (
-    uint256 id,
-    address creator,
-    uint256 salary,
-    uint256 start,
-    uint256 end,
-    uint256 timeOut,
-    bytes title,
-    bytes description)
-    {
-        Job memory jobReader = jobData[jobId];
-        return (jobReader.id,
-        jobReader.creator,
-        jobReader.salary,
-        jobReader.start,
-        jobReader.end,
-        jobReader.timeOut,
-        jobReader.title,
-        jobReader.description);
+    //Labor had finished their job
+    function finish(uint256 jobId)
+    public onlyValidId(jobId) onlyLabor(jobId) returns(bool) {
+        emit Done(jobId, msg.sender);
+        return true;
+    }
+
+    //Creator pay money
+    function pay(uint256 jobId)
+    public onlyValidId(jobId) onlyCreator(jobId) returns(bool) {
+        uint256 value;
+        
+        //Fund = salary + mortgage
+        value = jobData[jobId].salary;
+        value = value + (value/10);
+
+        //Transfer fund and mortgage to labor
+        jobData[jobId].labor.transfer(value);
+
+        emit Paid(jobData[jobId].creator, jobData[jobId].labor, value);
+
+        return true;
     }
  
 }
