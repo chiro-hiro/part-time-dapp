@@ -14,7 +14,7 @@ contract PartTime {
         bytes title;
         bytes description;
         address labor;
-        bool done;
+        bool completed;
     }
 
     //We don't let any trapped in this contract
@@ -95,8 +95,9 @@ contract PartTime {
         _;
     }
 
-    modifier onlyNotDone(uint256 jobId){
-        require(jobData[jobId].done == false);
+    //Only not completed
+    modifier onlyNotCompleted(uint256 jobId){
+        require(jobData[jobId].completed == false);
         _;
     }
 
@@ -184,15 +185,15 @@ contract PartTime {
 
     //Creator pay money
     function pay(uint256 jobId)
-    public onlyValidId(jobId) onlyCreator(jobId) onlyNotDone(jobId) returns(bool) {
+    public onlyValidId(jobId) onlyCreator(jobId) onlyNotCompleted(jobId) returns(bool) {
         uint256 value;
         
         //Fund = salary + mortgage
         value = jobData[jobId].salary;
         value = value + (value/10);
 
-        //Mark job ask done
-        jobData[jobId].done = true;
+        //Mark job as completed
+        jobData[jobId].completed = true;
 
         //Transfer fund and mortgage to labor
         jobData[jobId].labor.transfer(value);
